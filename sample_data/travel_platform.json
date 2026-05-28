@@ -1,0 +1,40 @@
+[
+  {
+    "trip_id": "TR-1022",
+    "employee_id": "E-2209",
+    "category": "flight",
+    "activity_value": 1400,
+    "activity_unit": "km",
+    "activity_date": "2026-01-20",
+    "origin": "DEL",
+    "destination": "DXB"
+  },
+  {
+    "trip_id": "TR-1023",
+    "employee_id": "E-2341",
+    "category": "hotel",
+    "activity_value": 3,
+    "activity_unit": "night",
+    "activity_date": "2026-01-21",
+    "city": "Dubai"
+  },
+  {
+    "trip_id": "TR-1024",
+    "employee_id": "E-1120",
+    "category": "ground",
+    "activity_value": 58,
+    "activity_unit": "km",
+    "activity_date": "01/22/2026",
+    "vehicle_type": "taxi"
+  },
+  {
+    "trip_id": "TR-1025",
+    "employee_id": "E-1120",
+    "category": "flight",
+    "activity_value": 45,
+    "activity_unit": "km",
+    "activity_date": "2026-01-22",
+    "origin": "BLR",
+    "destination": "MAA"
+  }
+]

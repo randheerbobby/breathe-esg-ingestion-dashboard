@@ -1,0 +1,4 @@
+invoice_id,meter_id,bill_start,bill_end,consumption_kwh,demand_kw,tariff
+INV-77821,MTR-DEL-09,2026-01-01,2026-01-31,18500,210,commercial_tou
+INV-77822,MTR-MUM-14,2026-01-15,2026-02-14,9200,130,commercial_tou
+INV-77823,MTR-BLR-03,2026-02-01,2026-02-28,0,90,commercial_tou
