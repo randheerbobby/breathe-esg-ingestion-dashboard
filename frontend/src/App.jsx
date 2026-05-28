@@ -3,6 +3,145 @@ import './App.css'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
 
+const DEMO_RECORDS = [
+  {
+    id: 9001,
+    source_type: 'sap',
+    source_record_id: '490001',
+    category: 'fuel',
+    scope: 'scope_1',
+    activity_date: '2026-01-15',
+    activity_value: '12000',
+    activity_unit_raw: 'liter (diesel)',
+    normalized_value: '12000',
+    normalized_unit: 'L',
+    emission_factor: '2.680000',
+    emission_factor_unit: 'kgCO2e/L',
+    emissions_kgco2e: '32160.0',
+    review_state: 'pending',
+    suspicious_reason: '',
+  },
+  {
+    id: 9002,
+    source_type: 'utility',
+    source_record_id: 'INV-77821',
+    category: 'electricity',
+    scope: 'scope_2',
+    activity_date: '2026-01-31',
+    activity_value: '850000',
+    activity_unit_raw: 'kWh',
+    normalized_value: '850000',
+    normalized_unit: 'kWh',
+    emission_factor: '0.720000',
+    emission_factor_unit: 'kgCO2e/kWh',
+    emissions_kgco2e: '612000.0',
+    review_state: 'pending',
+    suspicious_reason: 'Consumption jump vs prior month',
+  },
+  {
+    id: 9003,
+    source_type: 'travel',
+    source_record_id: 'TR-1022',
+    category: 'air_travel',
+    scope: 'scope_3',
+    activity_date: '2026-01-20',
+    activity_value: '3982',
+    activity_unit_raw: 'km',
+    normalized_value: '3982',
+    normalized_unit: 'km',
+    emission_factor: '0.146000',
+    emission_factor_unit: 'kgCO2e/km',
+    emissions_kgco2e: '581.4',
+    review_state: 'pending',
+    suspicious_reason: '',
+  },
+  {
+    id: 9004,
+    source_type: 'sap',
+    source_record_id: '490003',
+    category: 'procurement',
+    scope: 'scope_3',
+    activity_date: '2026-01-16',
+    activity_value: '2400',
+    activity_unit_raw: 'kg',
+    normalized_value: '2400',
+    normalized_unit: 'kg',
+    emission_factor: '0.450000',
+    emission_factor_unit: 'kgCO2e/kg',
+    emissions_kgco2e: '1080.0',
+    review_state: 'approved',
+    suspicious_reason: '',
+  },
+  {
+    id: 9005,
+    source_type: 'utility',
+    source_record_id: 'INV-77823',
+    category: 'electricity',
+    scope: 'scope_2',
+    activity_date: '2026-02-28',
+    activity_value: '0',
+    activity_unit_raw: 'kWh',
+    normalized_value: '0',
+    normalized_unit: 'kWh',
+    emission_factor: '0.720000',
+    emission_factor_unit: 'kgCO2e/kWh',
+    emissions_kgco2e: '0.0',
+    review_state: 'rejected',
+    suspicious_reason: 'Non-positive electricity consumption',
+  },
+  {
+    id: 9006,
+    source_type: 'travel',
+    source_record_id: 'TR-1023',
+    category: 'hotel',
+    scope: 'scope_3',
+    activity_date: '2026-01-21',
+    activity_value: '3',
+    activity_unit_raw: 'night',
+    normalized_value: '3',
+    normalized_unit: 'night',
+    emission_factor: '15.500000',
+    emission_factor_unit: 'kgCO2e/night',
+    emissions_kgco2e: '46.5',
+    review_state: 'locked',
+    suspicious_reason: '',
+  },
+  {
+    id: 9007,
+    source_type: 'travel',
+    source_record_id: 'TR-1024',
+    category: 'ground_transport',
+    scope: 'scope_3',
+    activity_date: '2026-01-22',
+    activity_value: '58',
+    activity_unit_raw: 'km',
+    normalized_value: '58',
+    normalized_unit: 'km',
+    emission_factor: '0.085000',
+    emission_factor_unit: 'kgCO2e/km',
+    emissions_kgco2e: '4.93',
+    review_state: 'pending',
+    suspicious_reason: '',
+  },
+  {
+    id: 9008,
+    source_type: 'travel',
+    source_record_id: 'TR-1025',
+    category: 'air_travel',
+    scope: 'scope_3',
+    activity_date: '2026-01-22',
+    activity_value: '45',
+    activity_unit_raw: 'km',
+    normalized_value: '45',
+    normalized_unit: 'km',
+    emission_factor: '0.146000',
+    emission_factor_unit: 'kgCO2e/km',
+    emissions_kgco2e: '6.57',
+    review_state: 'pending',
+    suspicious_reason: 'Flight distance seems too low; verify route coding',
+  },
+]
+
 function getDataSourceLabel(record) {
   if (record.source_type === 'sap') {
     if (record.category === 'fuel') return 'SAP Export (Fuel)'
@@ -24,6 +163,7 @@ function App() {
   const [tenantCode, setTenantCode] = useState('acme')
   const [uploadFile, setUploadFile] = useState(null)
   const [records, setRecords] = useState([])
+  const [demoRecords, setDemoRecords] = useState(DEMO_RECORDS)
   const [summary, setSummary] = useState(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -31,19 +171,20 @@ function App() {
   const [scopeFilter, setScopeFilter] = useState('all')
   const [reviewFilter, setReviewFilter] = useState('all')
 
+  const displayRecords = records.length ? records : demoRecords
   const suspiciousRecords = useMemo(
-    () => records.filter((record) => record.suspicious_reason),
-    [records],
+    () => displayRecords.filter((record) => record.suspicious_reason),
+    [displayRecords],
   )
 
   const filteredRecords = useMemo(() => {
-    return records.filter((record) => {
+    return displayRecords.filter((record) => {
       const sourceMatch = sourceFilter === 'all' || record.source_type === sourceFilter
       const scopeMatch = scopeFilter === 'all' || record.scope === scopeFilter
       const reviewMatch = reviewFilter === 'all' || record.review_state === reviewFilter
       return sourceMatch && scopeMatch && reviewMatch
     })
-  }, [records, reviewFilter, scopeFilter, sourceFilter])
+  }, [displayRecords, reviewFilter, scopeFilter, sourceFilter])
 
   async function fetchRecords() {
     const response = await fetch(`${API_BASE}/records/?tenant_code=${tenantCode}`)
@@ -101,16 +242,35 @@ function App() {
   }
 
   async function reviewRecord(recordId, action) {
-    await fetch(`${API_BASE}/records/${recordId}/review/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action,
-        reviewed_by: 'analyst@breathe.local',
-        analyst_note: `${action} from dashboard`,
-      }),
-    })
-    await refreshAll()
+    const nextState = action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'locked'
+    const updateRecord = (record) =>
+      record.id === recordId ? { ...record, review_state: nextState } : record
+
+    if (records.length) {
+      const previousRecords = records
+      setRecords((prev) => prev.map(updateRecord))
+      try {
+        const response = await fetch(`${API_BASE}/records/${recordId}/review/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action,
+            reviewed_by: 'analyst@breathe.local',
+            analyst_note: `${action} from dashboard`,
+          }),
+        })
+        if (!response.ok) {
+          throw new Error('Review action failed')
+        }
+        await refreshAll()
+      } catch (err) {
+        setRecords(previousRecords)
+        setError(err.message)
+      }
+      return
+    }
+
+    setDemoRecords((prev) => prev.map(updateRecord))
   }
 
   return (
@@ -158,6 +318,17 @@ function App() {
                 {item.review_state}: {item.count}
               </span>
             ))}
+          </div>
+        </section>
+      )}
+      {!summary && (
+        <section className="summaryCard">
+          <h2>Review Summary (Demo)</h2>
+          <p>
+            Suspicious rows: <strong>{suspiciousRecords.length}</strong>
+          </p>
+          <div className="inline">
+            <span className="pill">pending: {displayRecords.length}</span>
           </div>
         </section>
       )}
@@ -229,6 +400,7 @@ function App() {
                 <th>kgCO2e</th>
                 <th>Review</th>
                 <th>Suspicious Flag</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -251,11 +423,18 @@ function App() {
                   <td>{record.emissions_kgco2e}</td>
                   <td>{record.review_state}</td>
                   <td>{record.suspicious_reason || '-'}</td>
+                  <td>
+                    <div className="actions">
+                      <button onClick={() => reviewRecord(record.id, 'approve')}>Approve</button>
+                      <button onClick={() => reviewRecord(record.id, 'reject')}>Reject</button>
+                      <button onClick={() => reviewRecord(record.id, 'lock')}>Lock</button>
+                    </div>
+                  </td>
                 </tr>
               ))}
               {filteredRecords.length === 0 && (
                 <tr>
-                  <td colSpan="11">No records for selected filters.</td>
+                  <td colSpan="12">No records for selected filters.</td>
                 </tr>
               )}
             </tbody>
